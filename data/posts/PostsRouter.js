@@ -1,21 +1,25 @@
 const express = require("express");
 
 const Posts = require("../helpers/postDb.js");
+const Users = require("../helpers/userDb.js");
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { text } = req.body;
-  const addition = { text };
+  const { text, user_id } = req.body;
+  const addition = { text, user_id };
 
-  if (!text) {
+  if (!text || !user_id) {
     return res.status(400).json({
-      errorMessage: "Please provide text for the post."
+      errorMessage: "Please provide text and user_id for the post."
     });
   }
+  if (!Users.get().map(user => {return user.id}).includes(user_id)) {
+    return res.status(404).json({ message: "No user exists for given User Id" })
+  }
   try {
-    const posts = await Posts.insert(addition);
-    res.status(201).json(posts);
+    const post = await Posts.insert(addition);
+    res.status(201).json(post);
   } catch (error) {
     res.status(500).json({
       error: "There was an error while saving the post to the database"
