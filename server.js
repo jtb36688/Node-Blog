@@ -7,4 +7,7 @@ const server = express();
 
 server.use(express.json())
 
-server.use
+server.use('/api/posts', postsRouter)
+server.use('/api/users', usersRouter)
+
+module.exports = server;
