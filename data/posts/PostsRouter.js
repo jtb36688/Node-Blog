@@ -5,26 +5,40 @@ const Users = require("../helpers/userDb.js");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+const getposts = (req, res) => {
+  Posts.get()
+    .then(postobjects => {
+      res.status(200).json(postobjects);
+    })
+    .catch(() => {
+      res.status(500).json({ message: "Unable to validate user ID" });
+    });
+};
+
+router.post("/", (req, res) => {
   const { text, user_id } = req.body;
   const addition = { text, user_id };
-
   if (!text || !user_id) {
-    return res.status(400).json({
-      errorMessage: "Please provide text and user_id for the post."
-    });
+    return res
+      .status(400)
+      .json({ errorMessage: "Please provide both text and user ID" });
   }
-  if (!Users.get().map(user => {return user.id}).includes(user_id)) {
-    return res.status(404).json({ message: "No user exists for given User Id" })
-  }
-  try {
-    const post = await Posts.insert(addition);
-    res.status(201).json(post);
-  } catch (error) {
-    res.status(500).json({
-      error: "There was an error while saving the post to the database"
-    });
-  }
+  Users.getById(user_id).then(user => {
+    if (user) {
+      Posts.insert(addition).then(() => getposts(req, res))
+    }
+    else {
+      res.status(404).json({ message: "No User Found with Matching user ID"})
+    }
+  })
+    .catch(() =>
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "There was an error while saving the user to the database."
+        })
+    );
 });
 
 router.get("/", async (req, res) => {

@@ -4,7 +4,7 @@ const Users = require("../helpers/userDb.js");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", uppercase, async (req, res) => {
   const { name } = req.body;
   const addition = { name };
 
@@ -68,7 +68,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", uppercase, async (req, res) => {
   const { name } = req.body;
   const { id } = req.params;
   const changes = { name };
@@ -94,5 +94,11 @@ router.put("/:id", async (req, res) => {
       .json({ error: "The user information could not be modified." });
   }
 });
+
+
+function uppercase(req, res, next) {
+  req.body.name = req.body.name.toUpperCase();
+  next();
+}
 
 module.exports = router;
